@@ -1,16 +1,24 @@
 package Main;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 
 public class Main extends Application {
-    private Inventory inventory = new Inventory();
+    private final Inventory inventory = new Inventory();
+    private final int defaultPadding = 10;
+
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -20,17 +28,45 @@ public class Main extends Application {
 
         // setup the parts table
         Label partsTableLabel = new Label("Parts");
+        TextField partsTableSearch = new TextField();
         TableView<Part> partsTable = getPartsTable();
-        gridpane.add(partsTableLabel, 0, 0);
+        partsTableSearch.setId("part-search");
+        partsTableSearch.setPromptText("Search by Part ID or Name");
+        partsTableSearch.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+
+            String searchText = partsTableSearch.getText();
+            System.out.println(searchText);
+            if (searchText.length() == 0) {
+                partsTable.setItems(inventory.getAllParts());
+            }
+            try {
+                int partId = Integer.parseInt(searchText);
+                partsTable.setItems(FXCollections.observableArrayList(inventory.lookupPart(partId)));
+            } catch (Exception e) {
+                partsTable.setItems(inventory.lookupPart(searchText));
+            }
+        });
+
+        HBox partsHeader = new HBox(defaultPadding * 5, partsTableLabel, partsTableSearch);
+        partsHeader.setAlignment(Pos.BASELINE_LEFT);
+        HBox.setMargin(partsTableSearch, new Insets(0, 0, 0, 100));
+
+        gridpane.add(partsHeader, 0, 0);
         gridpane.add(partsTable, 0, 1);
+
+        // setup the products table
+        Label productsTableLabel = new Label("Products");
+        TableView<Product> productsTable = getProductsTable();
+        gridpane.add(productsTableLabel, 1, 0);
+        gridpane.add(productsTable, 1, 1);
 
         // Set the gap sizes.
         gridpane.setVgap(10);
         gridpane.setHgap(10);
-        gridpane.setPadding(new Insets(30));
+        gridpane.setPadding(new Insets(defaultPadding * 3));
 
         primaryStage.setTitle("Inventory Management System");
-        primaryStage.setScene(new Scene(gridpane, 1024, 768));
+        primaryStage.setScene(new Scene(gridpane));
         primaryStage.show();
     }
 
@@ -47,7 +83,7 @@ public class Main extends Application {
         TableView<Part> partsTable = new TableView<>();
         //Creating columns
         TableColumn partIdCol = new TableColumn("Part ID");
-        partIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+         partIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         TableColumn partNameCol = new TableColumn("Part Name");
         partNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn partStockCol = new TableColumn("Inventory Level");
@@ -61,6 +97,34 @@ public class Main extends Application {
         return partsTable;
     }
 
+    /**
+     * method to get the default products table
+     * @return TableView of Products
+     */
+    private TableView<Product> getProductsTable() {
+        loadDefaultProducts();
+
+        TableView<Product> productsTable = new TableView<>();
+        //Creating columns
+        TableColumn productsIdCol = new TableColumn("Product ID");
+        productsIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn productNameCol = new TableColumn("Product Name");
+        productNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn productStockCol = new TableColumn("Inventory Level");
+        productStockCol.setCellValueFactory(new PropertyValueFactory<>("stock"));
+        TableColumn productPriceCol = new TableColumn("Price/Cost Per Item");
+        productPriceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
+
+        productsTable.setItems(inventory.getAllProducts());
+        productsTable.getColumns().addAll(productsIdCol, productNameCol, productStockCol, productPriceCol);
+        productsTable.setMaxSize(350, 200);
+        return productsTable;
+    }
+
+    private void loadDefaultProducts() {
+        inventory.addProduct(new Product(1000, "Giant Bike", 299.99, 5, 1, 10));
+        inventory.addProduct(new Product(1001, "Tricyle", 99.99, 3, 1, 5));
+    }
     /**
      * method to load some default parts
      */

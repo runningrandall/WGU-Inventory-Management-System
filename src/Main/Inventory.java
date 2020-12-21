@@ -1,8 +1,10 @@
 package Main;
 
-import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+
+import java.util.stream.Collectors;
 
 public class Inventory {
     /* list of all parts */
@@ -52,8 +54,8 @@ public class Inventory {
      * @param partName
      * @return allParts
      */
-    public Part lookupPart(String partName) {
-        return allParts.stream().filter(part -> part.getName() == partName).findFirst().orElse(null);
+    public ObservableList<Part> lookupPart(String partName) {
+        return allParts.filtered(part -> part.getName().toLowerCase().contains(partName.toLowerCase()));
     }
 
     /**

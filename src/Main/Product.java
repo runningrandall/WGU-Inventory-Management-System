@@ -9,7 +9,7 @@ package Main;
  */
 import javafx.collections.ObservableList;
 
-public abstract class Product {
+public class Product {
     private ObservableList<Part> associatedParts;
     private int id;
     private String name;

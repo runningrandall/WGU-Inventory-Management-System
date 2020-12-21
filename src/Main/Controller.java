@@ -1,12 +1,10 @@
 package Main;
 
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 
 public class Controller {
-    public void loadTable() {
-        System.out.println("loaded table");
-    }
-    public void buttonClicked(Event e){
-        System.out.println("Button clicked");
+    public void onPartsSearch(Event event) {
+        System.out.println("foo");
     }
 }
