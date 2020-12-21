@@ -7,7 +7,7 @@ package Main;
  *
  * @author Randall Adams
  */
-public abstract class Part {
+public class Part {
     private int id;
     private String name;
     private double price;
