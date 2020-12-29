@@ -1,5 +1,7 @@
 package Main;
+import Elements.PartsTable;
 
+import Elements.ProductsTable;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -26,38 +28,20 @@ public class Main extends Application {
         // setup the grid
         GridPane gridpane = new GridPane();
 
-        // setup the parts table
-        Label partsTableLabel = new Label("Parts");
-        TextField partsTableSearch = new TextField();
-        TableView<Part> partsTable = getPartsTable();
-        partsTableSearch.setId("part-search");
-        partsTableSearch.setPromptText("Search by Part ID or Name");
-        partsTableSearch.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
-
-            String searchText = partsTableSearch.getText();
-            System.out.println(searchText);
-            if (searchText.length() == 0) {
-                partsTable.setItems(inventory.getAllParts());
-            }
-            try {
-                int partId = Integer.parseInt(searchText);
-                partsTable.setItems(FXCollections.observableArrayList(inventory.lookupPart(partId)));
-            } catch (Exception e) {
-                partsTable.setItems(inventory.lookupPart(searchText));
-            }
-        });
-
-        HBox partsHeader = new HBox(defaultPadding * 5, partsTableLabel, partsTableSearch);
-        partsHeader.setAlignment(Pos.BASELINE_LEFT);
-        HBox.setMargin(partsTableSearch, new Insets(0, 0, 0, 100));
-
+        // partsTable elements
+        PartsTable partsTableE = new PartsTable(); // get elements
+        TableView<Part> partsTable = getPartsTable(); // the parts table itself
+        HBox partsHeader = partsTableE.getPartsHeader(partsTable, inventory); // get header
+        // add to grid
         gridpane.add(partsHeader, 0, 0);
         gridpane.add(partsTable, 0, 1);
 
-        // setup the products table
-        Label productsTableLabel = new Label("Products");
-        TableView<Product> productsTable = getProductsTable();
-        gridpane.add(productsTableLabel, 1, 0);
+        // productsTable elements
+        ProductsTable productsTablesTableE = new ProductsTable(); // get elements
+        TableView<Product> productsTable = getProductsTable(); // get products table
+        HBox productsHeader = productsTablesTableE.getProductsHeader(productsTable, inventory); // get header
+        // add to grid
+        gridpane.add(productsHeader, 1, 0);
         gridpane.add(productsTable, 1, 1);
 
         // Set the gap sizes.

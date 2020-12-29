@@ -2,9 +2,6 @@ package Main;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-
-import java.util.stream.Collectors;
 
 public class Inventory {
     /* list of all parts */
@@ -63,8 +60,8 @@ public class Inventory {
      * @param productName
      * @return allProducts
      */
-    public Product lookupProduct(String productName) {
-        return allProducts.stream().filter(product -> product.getName() == productName).findFirst().orElse(null);
+    public ObservableList<Product> lookupProduct(String productName) {
+        return allProducts.filtered(product -> product.getName().toLowerCase().contains(productName.toLowerCase()));
     }
 
     /**
