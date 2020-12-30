@@ -21,17 +21,7 @@ public class PartsTable {
   private final int defaultPadding = 10;
   private final String inHouseLabel = "In House";
   private final String outsourcedLabel = "Outsourced";
-  private RadioButton inHouseRb = new RadioButton(inHouseLabel);
-  private RadioButton outsourcedRb = new RadioButton(outsourcedLabel);
-  private TextField partIdTf = new TextField();
-  private TextField partNameTf = new TextField();
-  private TextField partInvTf = new TextField();
-  private TextField partCostTf = new TextField();
-  private TextField partMaxTf = new TextField();
-  private TextField partMinTf = new TextField();
-  private TextField partMachineIdTf = new TextField();
-  private TextField partCompanyNameTf = new TextField();
-  private String costRegex = "^[0-9]+.[0-9]{2}$";
+  private final String costRegex = "^[0-9]+.[0-9]{2}$";
 
   public PartsTable(Inventory inventory, TableView<Part> partsTable) {
     this.inventory = inventory;
@@ -85,6 +75,17 @@ public class PartsTable {
   }
 
   private void showPartsForm() {
+    RadioButton inHouseRb = new RadioButton(inHouseLabel);
+    RadioButton outsourcedRb = new RadioButton(outsourcedLabel);
+    TextField partIdTf = new TextField();
+    TextField partNameTf = new TextField();
+    TextField partInvTf = new TextField();
+    TextField partCostTf = new TextField();
+    TextField partMaxTf = new TextField();
+    TextField partMinTf = new TextField();
+    TextField partMachineIdTf = new TextField();
+    TextField partCompanyNameTf = new TextField();
+
     Dialog<String> addPartDialog = new Dialog<String>();
     addPartDialog.setTitle("Add Part");
     addPartDialog.setResizable(true);
@@ -258,6 +259,7 @@ public class PartsTable {
               InHouse newPart = new InHouse(newPartId, partName, partCost, partInventory, partMax, partMin, partMachineId);
               inventory.addPart(newPart);
             }
+            addPartDialog.close();
           } else {
             System.out.println("Not Valid!");
             // TODO: handle this
@@ -272,5 +274,7 @@ public class PartsTable {
       }
     );
     addPartDialog.showAndWait();
+    addPartDialog.close();
+    addPartDialog.hide();
   }
 }
