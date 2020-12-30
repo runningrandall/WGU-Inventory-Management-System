@@ -26,9 +26,9 @@ public class Main extends Application {
         GridPane gridpane = new GridPane();
 
         // partsTable elements
-        PartsTable partsTableE = new PartsTable(); // get elements
         TableView<Part> partsTable = getPartsTable(); // the parts table itself
-        HBox partsHeader = partsTableE.getPartsHeader(partsTable, inventory); // get header
+        PartsTable partsTableE = new PartsTable(inventory, partsTable); // get elements
+        HBox partsHeader = partsTableE.getPartsHeader(); // get header
         HBox partsFooter = partsTableE.getPartsFooter();
         // add to grid
         gridpane.add(partsHeader, 0, 0);
