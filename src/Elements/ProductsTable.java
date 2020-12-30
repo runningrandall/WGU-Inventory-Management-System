@@ -5,6 +5,7 @@ import Main.Product;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -38,5 +39,20 @@ public class ProductsTable {
         HBox.setMargin(productsTableSearch, new Insets(0, 0, 0, 100)); // move it to the right
 
         return productsHeader;
+    }
+
+    public HBox getProductsFooter() {
+        Button productAddBtn = new Button();
+        productAddBtn.setText("Add");
+
+        Button productModifyBtn = new Button();
+        productModifyBtn.setText("Modify");
+
+        Button productDeleteBtn = new Button();
+        productDeleteBtn.setText("Delete");
+
+        HBox productsFooter = new HBox(defaultPadding, productAddBtn, productModifyBtn, productDeleteBtn);
+        productsFooter.setAlignment(Pos.BASELINE_RIGHT); // alignment
+        return productsFooter;
     }
 }

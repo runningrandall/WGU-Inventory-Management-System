@@ -3,15 +3,13 @@ import Elements.PartsTable;
 
 import Elements.ProductsTable;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -20,7 +18,6 @@ import javafx.scene.control.*;
 public class Main extends Application {
     private final Inventory inventory = new Inventory();
     private final int defaultPadding = 10;
-
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -32,17 +29,35 @@ public class Main extends Application {
         PartsTable partsTableE = new PartsTable(); // get elements
         TableView<Part> partsTable = getPartsTable(); // the parts table itself
         HBox partsHeader = partsTableE.getPartsHeader(partsTable, inventory); // get header
+        HBox partsFooter = partsTableE.getPartsFooter();
         // add to grid
         gridpane.add(partsHeader, 0, 0);
         gridpane.add(partsTable, 0, 1);
+        gridpane.add(partsFooter, 0, 2);
 
         // productsTable elements
-        ProductsTable productsTablesTableE = new ProductsTable(); // get elements
+        ProductsTable productsTableE = new ProductsTable(); // get elements
         TableView<Product> productsTable = getProductsTable(); // get products table
-        HBox productsHeader = productsTablesTableE.getProductsHeader(productsTable, inventory); // get header
+        HBox productsHeader = productsTableE.getProductsHeader(productsTable, inventory); // get header
+        HBox productsFooter = productsTableE.getProductsFooter();
         // add to grid
         gridpane.add(productsHeader, 1, 0);
         gridpane.add(productsTable, 1, 1);
+        gridpane.add(productsFooter, 1, 2);
+
+        // exit button
+        Button exitBtn = new Button();
+        exitBtn.setText("Exit");
+        exitBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
+
+        gridpane.add(exitBtn, 1, 3);
+        gridpane.setHalignment(exitBtn, HPos.RIGHT);
 
         // Set the gap sizes.
         gridpane.setVgap(10);
