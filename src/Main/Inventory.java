@@ -3,6 +3,12 @@ package Main;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/**
+ * Class to manage the inventory of parts and products
+ * @author Randall Adams
+ * @version 1.0.0
+ * @since 12/31/2020
+ */
 public class Inventory {
     /* list of all parts */
     private ObservableList<Part> allParts = FXCollections.observableArrayList();
