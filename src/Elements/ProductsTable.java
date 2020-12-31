@@ -326,6 +326,12 @@ public class ProductsTable {
     saveButton.addEventFilter(
       ActionEvent.ACTION,
       event -> {
+        /**
+         * the following will attempt to parse the fields as ints/doubles
+         *  if it's not an int/double the catch will display an error
+         *  I'm hoping this will suffice requirement runtime error requirement in the Javadoc
+         * @fixme would be nice to validate input fields BEFORE parsing. This will get better UX in the next version.
+         */
         try {
           String productName = productNameTf.getText();
           boolean productNameValid = productName.length() > 0;

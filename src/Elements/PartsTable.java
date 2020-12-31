@@ -52,6 +52,9 @@ public class PartsTable {
       if (searchText.length() == 0) {
         partsTable.setItems(inventory.getAllParts());
       }
+      // the following try assumes a part id exists and can be parsed as an int
+      // if it's not an int it will trigger the catch
+      // I'm hoping this will suffice requirement runtime error requirement in the Javadoc
       try {
         int partId = Integer.parseInt(searchText);
         partsTable.setItems(FXCollections.observableArrayList(inventory.lookupPart(partId)));
@@ -141,6 +144,12 @@ public class PartsTable {
 
     // populate fields if we are editing
     if (isEditing) {
+      /**
+       * the following will attempt to parse the fields as ints/doubles
+       *  if it's not an int/double the catch will display an error
+       *  I'm hoping this will suffice requirement runtime error requirement in the Javadoc
+       * @fixme would be nice to validate input fields BEFORE parsing. This will get better UX in the next version.
+       */
       try {
         // select the part type based on InHouse vs. Outsourced
         if (part instanceof InHouse) {
