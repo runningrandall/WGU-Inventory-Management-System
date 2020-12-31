@@ -1,11 +1,8 @@
 package Elements;
 import Main.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -16,11 +13,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class PartsTable {
-  private Inventory inventory;
-  private TableView<Part> partsTable;
+  private final Inventory inventory;
+  private final TableView<Part> partsTable;
   private final int defaultPadding = 10;
-  private final String inHouseLabel = "In House";
-  private final String outsourcedLabel = "Outsourced";
   private final String costRegex = "^[0-9]+.[0-9]{2}$";
 
   public PartsTable(Inventory inventory, TableView<Part> partsTable) {
@@ -32,7 +27,7 @@ public class PartsTable {
     // setup the parts table
     Label partsTableLabel = new Label("Parts"); // label
     TextField partsTableSearch = new TextField(); // search field
-    partsTableSearch.setPromptText("Search by Part ID or Name"); // placehoder
+    partsTableSearch.setPromptText("Search by Part ID or Name"); // placeholder
     partsTableSearch.addEventHandler(KeyEvent.KEY_RELEASED, event -> { // event handler
       String searchText = partsTableSearch.getText();
       if (searchText.length() == 0) {
@@ -45,7 +40,7 @@ public class PartsTable {
         partsTable.setItems(inventory.lookupPart(searchText));
       }
     });
-    // setup containing hbox for label/search field
+    // setup containing horizontal box for label/search field
     HBox partsHeader = new HBox(defaultPadding * 5, partsTableLabel, partsTableSearch);
     partsHeader.setAlignment(Pos.BASELINE_LEFT); // alignment
     HBox.setMargin(partsTableSearch, new Insets(0, 0, 0, 100)); // move it to the right
@@ -56,12 +51,7 @@ public class PartsTable {
   public HBox getPartsFooter() {
     Button partsAddBtn = new Button();
     partsAddBtn.setText("Add");
-    partsAddBtn.setOnAction(new EventHandler<ActionEvent>() {
-      @Override
-      public void handle(ActionEvent actionEvent) {
-        showPartsForm();
-      }
-    });
+    partsAddBtn.setOnAction(actionEvent -> showPartsForm(null));
 
     Button partsModifyBtn = new Button();
     partsModifyBtn.setText("Modify");
@@ -74,8 +64,12 @@ public class PartsTable {
     return partsFooter;
   }
 
-  private void showPartsForm() {
+  private void showPartsForm(Integer partId) {
+    boolean isEditing = partId != null;
+    Part part = isEditing ? inventory.lookupPart(partId) : null;
+    String inHouseLabel = "In House";
     RadioButton inHouseRb = new RadioButton(inHouseLabel);
+    String outsourcedLabel = "Outsourced";
     RadioButton outsourcedRb = new RadioButton(outsourcedLabel);
     TextField partIdTf = new TextField();
     TextField partNameTf = new TextField();
@@ -86,7 +80,25 @@ public class PartsTable {
     TextField partMachineIdTf = new TextField();
     TextField partCompanyNameTf = new TextField();
 
-    Dialog<String> addPartDialog = new Dialog<String>();
+    if (isEditing) {
+      if (part instanceof InHouse) {
+        partMachineIdTf.setText(Integer.toString(((InHouse) part).getMachineId()));
+        inHouseRb.setSelected(true);
+      }
+
+      if (part instanceof Outsourced) {
+        partCompanyNameTf.setText(((Outsourced) part).getCompanyName());
+        outsourcedRb.setSelected(true);
+      }
+      partIdTf.setText(Integer.toString(part.getId()));
+      partNameTf.setText(part.getName());
+      partInvTf.setText(Integer.toString(part.getStock()));
+      partCostTf.setText(Double.toString(part.getPrice()));
+      partMaxTf.setText(Integer.toString(part.getMax()));
+      partMinTf.setText(Integer.toString(part.getMin()));
+    }
+
+    Dialog<String> addPartDialog = new Dialog<>();
     addPartDialog.setTitle("Add Part");
     addPartDialog.setResizable(true);
 
@@ -110,48 +122,36 @@ public class PartsTable {
     partInvTf.setPromptText("0");
     Label partInventoryLabel = new Label("Inventory"); // label
     // force the field to be numeric only
-    partInvTf.textProperty().addListener(new ChangeListener<String>() {
-      @Override
-      public void changed(ObservableValue<? extends String> observableValue, String oldV, String newV) {
-        if (!newV.matches("\\d*")) {
-          partInvTf.setText(newV.replaceAll("[^\\d]", ""));
-        }
+    partInvTf.textProperty().addListener((observableValue, oldV, newV) -> {
+      if (!newV.matches("\\d*")) {
+        partInvTf.setText(newV.replaceAll("[^\\d]", ""));
       }
     });
 
     // part cost
     partCostTf.setPromptText("0.00");
     Label partCostLabel = new Label("Price/Cost"); // label
-    partCostTf.textProperty().addListener(new ChangeListener<String>() {
-      @Override
-      public void changed(ObservableValue<? extends String> observableValue, String oldV, String newV) {
-        if (!newV.matches(costRegex)){
-          partCostTf.setText(newV.replaceAll("[" + costRegex + "]", ""));
-        }
+    partCostTf.textProperty().addListener((observableValue, oldV, newV) -> {
+      if (!newV.matches(costRegex)){
+        partCostTf.setText(newV.replaceAll("[" + costRegex + "]", ""));
       }
     });
 
     // part max
     partMaxTf.setPromptText("20");
     Label partMaxLabel = new Label("Max"); // label
-    partMaxTf.textProperty().addListener(new ChangeListener<String>() {
-      @Override
-      public void changed(ObservableValue<? extends String> observableValue, String oldV, String newV) {
-        if (!newV.matches("\\d*")) {
-          partMaxTf.setText(newV.replaceAll("[^\\d]", ""));
-        }
+    partMaxTf.textProperty().addListener((observableValue, oldV, newV) -> {
+      if (!newV.matches("\\d*")) {
+        partMaxTf.setText(newV.replaceAll("[^\\d]", ""));
       }
     });
 
     // part min
     partMinTf.setPromptText("1");
     Label partMinLabel = new Label("Min"); // label
-    partMinTf.textProperty().addListener(new ChangeListener<String>() {
-      @Override
-      public void changed(ObservableValue<? extends String> observableValue, String oldV, String newV) {
-        if (!newV.matches("\\d*")) {
-          partMinTf.setText(newV.replaceAll("[^\\d]", ""));
-        }
+    partMinTf.textProperty().addListener((observableValue, oldV, newV) -> {
+      if (!newV.matches("\\d*")) {
+        partMinTf.setText(newV.replaceAll("[^\\d]", ""));
       }
     });
 
@@ -160,12 +160,9 @@ public class PartsTable {
     partMachineIdTf.setPromptText("0000");
     Label partMachineIdLabel = new Label("Machine ID"); // label
     partMachineIdLabel.visibleProperty().bind(inHouseRb.selectedProperty());
-    partMachineIdTf.textProperty().addListener(new ChangeListener<String>() {
-      @Override
-      public void changed(ObservableValue<? extends String> observableValue, String oldV, String newV) {
-        if (!newV.matches("\\d*")) {
-          partMachineIdTf.setText(newV.replaceAll("[^\\d]", ""));
-        }
+    partMachineIdTf.textProperty().addListener((observableValue, oldV, newV) -> {
+      if (!newV.matches("\\d*")) {
+        partMachineIdTf.setText(newV.replaceAll("[^\\d]", ""));
       }
     });
 
@@ -217,33 +214,32 @@ public class PartsTable {
           // process the form here
           // make sure it is valid
           ObservableList<Part> allParts = inventory.getAllParts();
-          Integer newPartId = 0;
-          for(Part part : allParts) {
-            if(newPartId <= part.getId()) {
-              newPartId = part.getId() + 1;
+          int newPartId = 0;
+          for(Part myPart : allParts) {
+            if(newPartId <= myPart.getId()) {
+              newPartId = myPart.getId() + 1;
             }
           }
 
-          Boolean partSourceValid = inHouseRb.isSelected() || outsourcedRb.isSelected();
-          String partSource = partSourceValid && inHouseRb.isSelected() ? inHouseLabel : outsourcedLabel;
+          boolean partSourceValid = inHouseRb.isSelected() || outsourcedRb.isSelected();
           String partName = partNameTf.getText();
-          Boolean partNameValid = partName.length() > 0;
-          Integer partInventory = Integer.parseInt(partInvTf.getText());
-          Boolean partInventoryValid = partInventory >= 0;
-          Double partCost = Double.parseDouble(partCostTf.getText());
-          Boolean partCostValid = partCost >= 0;
-          Integer partMax = Integer.parseInt(partMaxTf.getText());
-          Boolean partMaxValid = partMax >= 1;
-          Integer partMin = Integer.parseInt(partMinTf.getText());
-          Boolean partMinValid = partMin >= 0;
-          Boolean partMinMaxValid = partMaxValid && partMinValid && partMax >= partMin;
+          boolean partNameValid = partName.length() > 0;
+          int partInventory = Integer.parseInt(partInvTf.getText());
+          boolean partInventoryValid = partInventory >= 0;
+          double partCost = Double.parseDouble(partCostTf.getText());
+          boolean partCostValid = partCost >= 0;
+          int partMax = Integer.parseInt(partMaxTf.getText());
+          boolean partMaxValid = partMax >= 1;
+          int partMin = Integer.parseInt(partMinTf.getText());
+          boolean partMinValid = partMin >= 0;
+          boolean partMinMaxValid = partMaxValid && partMinValid && partMax >= partMin;
           Integer partMachineId = inHouseRb.isSelected() ? Integer.parseInt(partMachineIdTf.getText()) : null;
           String partCompanyName = outsourcedRb.isSelected() ? partCompanyNameTf.getText() : null;
 
-          Boolean partMachineOrCompanyNameValid =
+          boolean partMachineOrCompanyNameValid =
             (inHouseRb.isSelected() && partMachineId != null && partMachineId > 999)
             ||
-            (outsourcedRb.isSelected() && partCompanyName.length() > 0);
+            (outsourcedRb.isSelected() && partCompanyName!= null && partCompanyName.length() > 0);
 
           if (
             partSourceValid
