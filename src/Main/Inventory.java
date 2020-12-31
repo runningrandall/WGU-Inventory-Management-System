@@ -10,11 +10,9 @@ public class Inventory {
     /* list of all products */
     private ObservableList<Product> allProducts = FXCollections.observableArrayList();
 
-    // create constructor with some default parts and products?
-
     /**
      * add a part
-     * @param newPart
+     * @param newPart the part to add
      */
     public void addPart(Part newPart) {
         allParts.add(newPart);
@@ -22,7 +20,7 @@ public class Inventory {
 
     /**
      * add a product
-     * @param newProduct
+     * @param newProduct the product to add
      */
     public void addProduct(Product newProduct) {
         allProducts.add(newProduct);
@@ -30,8 +28,8 @@ public class Inventory {
 
     /**
      * lookup a part by part id
-     * @param partId
-     * @return allParts
+     * @param partId the id of the part to look for
+     * @return Part that matches
      */
     public Part lookupPart(int partId) {
         return allParts.stream().filter(part -> part.getId() == partId).findFirst().orElse(null);
@@ -39,8 +37,8 @@ public class Inventory {
 
     /**
      * lookup products by product id
-     * @param productId
-     * @return allProducts
+     * @param productId the product id to look for
+     * @return Product that matches
      */
     public Product lookupProduct(int productId) {
         return allProducts.stream().filter(product -> product.getId() == productId).findFirst().orElse(null);
@@ -48,8 +46,8 @@ public class Inventory {
 
     /**
      * lookup parts by part name
-     * @param partName
-     * @return allParts
+     * @param partName part name to search for
+     * @return allParts that match the part name
      */
     public ObservableList<Part> lookupPart(String partName) {
         return allParts.filtered(part -> part.getName().toLowerCase().contains(partName.toLowerCase()));
@@ -57,8 +55,8 @@ public class Inventory {
 
     /**
      * lookup products by product name
-     * @param productName
-     * @return allProducts
+     * @param productName product name to search for
+     * @return allProducts that match the product name
      */
     public ObservableList<Product> lookupProduct(String productName) {
         return allProducts.filtered(product -> product.getName().toLowerCase().contains(productName.toLowerCase()));
@@ -66,8 +64,8 @@ public class Inventory {
 
     /**
      * update a part
-     * @param index
-     * @param selectedPart
+     * @param index the index of the part to be updated
+     * @param selectedPart the updated part to replace the existing part
      */
     public void updatePart(int index, Part selectedPart) {
         // what if index isn't there?
@@ -76,8 +74,8 @@ public class Inventory {
 
     /**
      * update a product
-     * @param index
-     * @param selectedProduct
+     * @param index the index of the product to be updated
+     * @param selectedProduct the updated product to replace existing product
      */
     public void updateProduct(int index, Product selectedProduct) {
         allProducts.set(index, selectedProduct);
@@ -85,8 +83,8 @@ public class Inventory {
 
     /**
      * delete a part from the parts list
-     * @param selectedPart
-     * @return boolean
+     * @param selectedPart the part to delete
+     * @return boolean success/failure on deletion
      */
     public boolean deletePart(Part selectedPart) {
         return allParts.removeIf(part -> part.getId() == selectedPart.getId());
@@ -94,8 +92,8 @@ public class Inventory {
 
     /**
      * delete a product from the products list
-     * @param selectedProduct
-     * @return boolean
+     * @param selectedProduct the product to delete
+     * @return boolean success/failure on deletion
      */
     public boolean deleteProduct(Product selectedProduct) {
         return allProducts.removeIf(product -> product.getId() == selectedProduct.getId());
@@ -111,7 +109,7 @@ public class Inventory {
 
     /**
      * get all products
-     * @return
+     * @return all products
      */
     public ObservableList<Product> getAllProducts() {
         return allProducts;

@@ -1,14 +1,14 @@
 package Main;
-/**
- * Class for Product.java
- */
-
-/**
- *
- * @author Randall Adams
- */
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class for managing products
+ * @author Randall Adams
+ * @version 1.0.0
+ * @since 12/31/2020
+ */
 public class Product {
     private ObservableList<Part> associatedParts;
     private int id;
@@ -25,6 +25,7 @@ public class Product {
         this.stock = stock;
         this.min = min;
         this.max = max;
+        this.associatedParts = FXCollections.observableArrayList();
     }
 
     /**
@@ -67,7 +68,7 @@ public class Product {
 
     /**
      * setter for price
-     * @param price to set
+     * @param price the price to set
      */
     public void setPrice (double price) {
         this.price = price;
@@ -75,7 +76,7 @@ public class Product {
 
     /**
      * getter for stock
-     * @return stock
+     * @return product stock
      */
     public int getStock () {
         return stock;
@@ -83,7 +84,7 @@ public class Product {
 
     /**
      * setter for stock
-     * @param stock
+     * @param stock the stock value to set
      */
     public void setStock (int stock) {
         this.stock = stock;
@@ -91,7 +92,7 @@ public class Product {
 
     /**
      * getter for min
-     * @return min
+     * @return product min
      */
     public int getMin () {
         return min;
@@ -99,7 +100,7 @@ public class Product {
 
     /**
      * setter for min
-     * @param min
+     * @param min the min to set
      */
     public void setMin (int min) {
         this.min = min;
@@ -107,7 +108,7 @@ public class Product {
 
     /**
      * getter for max
-     * @return max
+     * @return product max
      */
     public int getMax () {
         return max;
@@ -115,7 +116,7 @@ public class Product {
 
     /**
      * setter for max
-     * @param max
+     * @param max the max value
      */
     public void setMax (int max) {
         this.max = max;
@@ -124,16 +125,25 @@ public class Product {
 
     /**
      * method to add a part to the product
-     * @param part
+     * @param part the part to add
      */
     public void addAssociatedPart(Part part) {
-        associatedParts.add(part);
+        AtomicBoolean partAlreadyAssociated = new AtomicBoolean(false);
+        associatedParts.forEach(aPart -> {
+            if (aPart.getId() == part.getId()) {
+                partAlreadyAssociated.set(true);
+            }
+        });
+
+        if (!partAlreadyAssociated.get()) {
+            associatedParts.add(part);
+        }
     }
 
     /**
      * method to delete a part from the associatedParts list
      * @param selectedAssociatedPart
-     * @return
+     * @return boolean regarding success of deletion
      */
     public boolean deleteAssociatedPart(Part selectedAssociatedPart) {
         return associatedParts.removeIf(part -> part.getId() == selectedAssociatedPart.getId());
@@ -141,7 +151,7 @@ public class Product {
 
     /**
      * method to get all the associated parts from parts list
-     * @return
+     * @return all parts associated with product
      */
     public ObservableList<Part> getAllAssociatedParts() {
         return associatedParts;

@@ -1,5 +1,4 @@
 <?package Main?>
-<?import javafx.geometry.Insets?>
 <?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -25,43 +24,6 @@
         GridPane.columnIndex="0" GridPane.rowIndex="2"
         GridPane.columnSpan="1">
     </Label>
-<!--    <Button fx:id="button1" text="Click me!" onAction="#buttonClicked"/>-->
-<!--    <TableView fx:id="partsTable"-->
-<!--          GridPane.columnIndex="0"-->
-<!--          GridPane.rowIndex="2">-->
-<!--        <columns>-->
-<!--            <TableColumn prefWidth="75.0" text="Part ID">-->
-<!--                <cellValueFactory>-->
-<!--                    <PropertyValueFactory property="id" />-->
-<!--                </cellValueFactory>-->
-<!--            </TableColumn>-->
-<!--            <TableColumn prefWidth="150.0" text="Part Name">-->
-<!--                <cellValueFactory>-->
-<!--                    <PropertyValueFactory property="name" />-->
-<!--                </cellValueFactory>-->
-<!--            </TableColumn>-->
-<!--            <TableColumn prefWidth="75.0" text="Inventory Level">-->
-<!--                <cellValueFactory>-->
-<!--                    <PropertyValueFactory property="stock" />-->
-<!--                </cellValueFactory>-->
-<!--            </TableColumn>-->
-<!--            <TableColumn prefWidth="75.0" text="Price/Cost Per Unit">-->
-<!--                <cellValueFactory>-->
-<!--                    <PropertyValueFactory property="price" />-->
-<!--                </cellValueFactory>-->
-<!--            </TableColumn>-->
-<!--        </columns>-->
-<!--        <items>-->
-<!--            <FXCollections fx:factory="observableArrayList">-->
-<!--                <Part>-->
-<!--                    <Integer fx:value="1"">1</Integer>-->
-<!--                </Part>-->
-<!--            </FXCollections>-->
-<!--        </items>-->
-<!--        <columnResizePolicy>-->
-<!--            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />-->
-<!--        </columnResizePolicy>-->
-<!--    </TableView>-->
     <stylesheets>
         <URL value="@main.css" />
     </stylesheets>

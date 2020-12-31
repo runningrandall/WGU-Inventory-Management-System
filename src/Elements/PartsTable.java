@@ -74,23 +74,20 @@ public class PartsTable {
    * @return HBox
    */
   public HBox getPartsFooter() {
-    Button partsAddBtn = new Button();
-    partsAddBtn.setText("Add");
-    partsAddBtn.setOnAction(actionEvent -> showPartsForm(null));
+    Button partsAddBtn = new Button("Add");
+    partsAddBtn.setOnAction(actionEvent -> showPartForm(null));
 
-    Button partsModifyBtn = new Button();
-    partsModifyBtn.setText("Modify");
+    Button partsModifyBtn = new Button("Modify");
     partsModifyBtn.setOnAction(actionEvent -> {
       Part selectedPart = partsTable.getSelectionModel().getSelectedItem();
       if (selectedPart == null) {
         showError("Please select a part to modify.");
       } else {
-        showPartsForm(selectedPart.getId());
+        showPartForm(selectedPart.getId());
       }
     });
 
-    Button partsDeleteBtn = new Button();
-    partsDeleteBtn.setText("Delete");
+    Button partsDeleteBtn = new Button("Delete");
     partsDeleteBtn.setOnAction(actionEvent -> {
       Part selectedPart = partsTable.getSelectionModel().getSelectedItem();
       if (selectedPart == null) {
@@ -121,7 +118,7 @@ public class PartsTable {
    * this form is used to add and modify parts
    * @param partId - the part id we are editing (or null)
    */
-  private void showPartsForm(Integer partId) {
+  private void showPartForm(Integer partId) {
     // determine if we are editing or adding a new part
     boolean isEditing = partId != null;
     // if editing grab the part
@@ -166,7 +163,7 @@ public class PartsTable {
 
     // setup the dialog
     Dialog<String> addPartDialog = new Dialog<>();
-    addPartDialog.setTitle("Add Part");
+    addPartDialog.setTitle(isEditing ? "Modify Part" : "Add Part");
     addPartDialog.setResizable(true);
 
     // in house vs outsourced part
@@ -243,8 +240,6 @@ public class PartsTable {
     Label partCompanyNameLabel = new Label("Company Name");
     // only show when the part is "Outsourced"
     partCompanyNameLabel.visibleProperty().bind(outsourcedRb.selectedProperty());
-
-
 
     // setup the grid
     GridPane gridpane = new GridPane();
@@ -382,7 +377,7 @@ public class PartsTable {
   }
 
   /**
-   * method to get the next part id
+   * method to get the part index from a part id
    * it might be better for this method to be in the Inventory class
    * but the UML diagram said not to
    * @param partId - the part id we are looking for

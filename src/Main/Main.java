@@ -46,7 +46,7 @@ public class Main extends Application {
 
         // productsTable elements
         TableView<Product> productsTable = getProductsTable(); // get products table
-        ProductsTable productsTableE = new ProductsTable(); // get elements
+        ProductsTable productsTableE = new ProductsTable(inventory, productsTable); // get elements
         productsTable.setPlaceholder(new Label("No products found."));
         HBox productsHeader = productsTableE.getProductsHeader(productsTable, inventory); // get header
         HBox productsFooter = productsTableE.getProductsFooter();
