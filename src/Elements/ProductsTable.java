@@ -100,6 +100,8 @@ public class ProductsTable {
       Product selectedProduct = productsTable.getSelectionModel().getSelectedItem();
       if (selectedProduct == null) {
         showError("Please select a product to delete.");
+      } else if (selectedProduct.getAllAssociatedParts().size() > 0) {
+        showError("You cannot delete a product that has associated parts");
       } else {
         // must confirm the delete via confirmation alert
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -187,7 +189,21 @@ public class ProductsTable {
       if (selectedPart == null) {
         showError("Please select a part to remove.");
       } else {
-        product.deleteAssociatedPart(selectedPart);
+        // must confirm the delete via confirmation alert
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Dialog");
+        alert.setHeaderText("Remove a Part");
+        alert.setContentText("Are you sure you want to remove this part?");
+        Optional<ButtonType> result = alert.showAndWait();
+        // if the alert is confirmed then delete the part, otherwise close the alert
+        if (result.isPresent() && result.get() == ButtonType.OK){
+          if(!product.deleteAssociatedPart(selectedPart)) {
+            alert.close();
+            showError("There was an error deleting the part. Please try again later.");
+          }
+        } else {
+          alert.close();
+        }
       }
     });
 
@@ -321,10 +337,22 @@ public class ProductsTable {
           int productMin = Integer.parseInt(productMinTf.getText());
           boolean productMinValid = productMin >= 0;
           boolean productMinMaxValid = productMaxValid && productMinValid && productMax >= productMin;
-          boolean productInventoryValid = productInventory >= 0 && productInventory <= productMax && productInventory >= productMin;
+          boolean productInventoryValid = productInventory <= productMax && productInventory >= productMin;
 
           // if we passed validation
-          if (productNameValid && productInventoryValid && productCostValid && productMinMaxValid) {
+          if (!productNameValid) {
+            showError("Please provide a valid product name");
+            event.consume();
+          } else if (!productInventoryValid) {
+            showError("Please provide a valid product inventory. It must be between min and max");
+            event.consume();
+          } else if (!productCostValid) {
+            showError("Pleae provide a valid cost");
+            event.consume();
+          } else if (!productMinMaxValid) {
+            showError("Please provide valid min/max values");
+            event.consume();
+          } else {
             Product newProduct = new Product(isEditing ? productId : getNewProductId(), productName, productCost, productInventory, productMin, productMax);
             // now copy all the associated parts
             for(Part myPart : associatedParts) {
@@ -336,12 +364,8 @@ public class ProductsTable {
             } else {
               inventory.addProduct(newProduct);
             }
-          } else {
-            showError("Invalid Product. Please fix the form and try again.");
-            // prevent dialog from closing
-            event.consume();
+            addProductDialog.close();
           }
-          addProductDialog.close();
         } catch (Exception e) {
           showError(e.getMessage());
           event.consume();

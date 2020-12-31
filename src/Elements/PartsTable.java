@@ -295,7 +295,7 @@ public class PartsTable {
           int partMin = Integer.parseInt(partMinTf.getText());
           boolean partMinValid = partMin >= 0;
           boolean partMinMaxValid = partMaxValid && partMinValid && partMax >= partMin;
-          boolean partInventoryValid = partInventory >= 0 && partInventory <= partMax && partInventory >= partMin;
+          boolean partInventoryValid = partInventory <= partMax && partInventory >= partMin;
           Integer partMachineId = inHouseRb.isSelected() ? Integer.parseInt(partMachineIdTf.getText()) : null;
           String partCompanyName = outsourcedRb.isSelected() ? partCompanyNameTf.getText() : null;
 
@@ -304,17 +304,26 @@ public class PartsTable {
             ||
             (outsourcedRb.isSelected() && partCompanyName!= null && partCompanyName.length() > 0);
 
-          // all of the following must be met to save
-          // if any of these are not met we don't tell the user
-          // specifically what's wrong...would be nice to do that
-          if (
-            partSourceValid
-              && partNameValid
-              && partInventoryValid
-              && partCostValid
-              && partMinMaxValid
-              && partMachineOrCompanyNameValid) {
-
+          // form validation
+          if (!partSourceValid) {
+            showError("Please select a part source (InHouse or Outsourced)");
+            event.consume();
+          } else if (!partNameValid) {
+            showError("Please provide a valid part name");
+            event.consume();
+          } else if (!partInventoryValid) {
+            showError("Please provide a valid inventory level. It must be between the min and max");
+            event.consume();
+          } else if (!partCostValid) {
+            showError("Please provide a valid part cost");
+            event.consume();
+          } else if (!partMinMaxValid) {
+            showError("Please provide a valid min/max value.");
+            event.consume();
+          } else if (!partMachineOrCompanyNameValid) {
+            showError("Please provide a valid " + (outsourcedRb.isSelected() ? "company name" : "machine id"));
+            event.consume();
+          } else {
             int newPartId = partId != null ? partId : getNewPartId();
             Part newPart;
             // various types based on outsourced vs InHouse
@@ -332,10 +341,6 @@ public class PartsTable {
               inventory.addPart(newPart);
             }
             addPartDialog.close();
-          } else {
-            showError("Invalid Part. Please fix the form and try again.");
-            // prevent dialog from closing
-            event.consume();
           }
         } catch (Exception e) {
           showError(e.getMessage());
