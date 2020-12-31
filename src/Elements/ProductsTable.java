@@ -109,7 +109,9 @@ public class ProductsTable {
         Optional<ButtonType> result = alert.showAndWait();
         // if the alert is confirmed then delete the part, otherwise close the alert
         if (result.isPresent() && result.get() == ButtonType.OK){
-          inventory.deleteProduct(selectedProduct);
+          if(!inventory.deleteProduct(selectedProduct)) {
+            showError("There was an error deleting the product. Please try again later.");
+          }
         } else {
           alert.close();
         }
@@ -312,7 +314,6 @@ public class ProductsTable {
           String productName = productNameTf.getText();
           boolean productNameValid = productName.length() > 0;
           int productInventory = Integer.parseInt(productInvTf.getText());
-          boolean productInventoryValid = productInventory >= 0;
           double productCost = Double.parseDouble(productCostTf.getText());
           boolean productCostValid = productCost >= 0;
           int productMax = Integer.parseInt(productMaxTf.getText());
@@ -320,6 +321,7 @@ public class ProductsTable {
           int productMin = Integer.parseInt(productMinTf.getText());
           boolean productMinValid = productMin >= 0;
           boolean productMinMaxValid = productMaxValid && productMinValid && productMax >= productMin;
+          boolean productInventoryValid = productInventory >= 0 && productInventory <= productMax && productInventory >= productMin;
 
           // if we passed validation
           if (productNameValid && productInventoryValid && productCostValid && productMinMaxValid) {

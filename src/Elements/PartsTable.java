@@ -101,7 +101,9 @@ public class PartsTable {
         Optional<ButtonType> result = alert.showAndWait();
         // if the alert is confirmed then delete the part, otherwise close the alert
         if (result.isPresent() && result.get() == ButtonType.OK){
-          inventory.deletePart(selectedPart);
+          if(!inventory.deletePart(selectedPart)) {
+            showError("There was an error deleting the part. Please try again later.");
+          };
         } else {
           alert.close();
         }
@@ -286,7 +288,6 @@ public class PartsTable {
           String partName = partNameTf.getText();
           boolean partNameValid = partName.length() > 0;
           int partInventory = Integer.parseInt(partInvTf.getText());
-          boolean partInventoryValid = partInventory >= 0;
           double partCost = Double.parseDouble(partCostTf.getText());
           boolean partCostValid = partCost >= 0;
           int partMax = Integer.parseInt(partMaxTf.getText());
@@ -294,6 +295,7 @@ public class PartsTable {
           int partMin = Integer.parseInt(partMinTf.getText());
           boolean partMinValid = partMin >= 0;
           boolean partMinMaxValid = partMaxValid && partMinValid && partMax >= partMin;
+          boolean partInventoryValid = partInventory >= 0 && partInventory <= partMax && partInventory >= partMin;
           Integer partMachineId = inHouseRb.isSelected() ? Integer.parseInt(partMachineIdTf.getText()) : null;
           String partCompanyName = outsourcedRb.isSelected() ? partCompanyNameTf.getText() : null;
 
