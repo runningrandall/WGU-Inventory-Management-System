@@ -12,11 +12,15 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
+import java.util.Optional;
+
 public class PartsTable {
   private final Inventory inventory;
   private final TableView<Part> partsTable;
   private final int defaultPadding = 10;
   private final String costRegex = "^[0-9]+.[0-9]{2}$";
+  // create a alert
+  private Alert a = new Alert(Alert.AlertType.NONE);
 
   public PartsTable(Inventory inventory, TableView<Part> partsTable) {
     this.inventory = inventory;
@@ -51,13 +55,50 @@ public class PartsTable {
   public HBox getPartsFooter() {
     Button partsAddBtn = new Button();
     partsAddBtn.setText("Add");
-    partsAddBtn.setOnAction(actionEvent -> showPartsForm(null));
+    partsAddBtn.setOnAction(actionEvent -> {
+      showPartsForm(null);
+    });
 
     Button partsModifyBtn = new Button();
     partsModifyBtn.setText("Modify");
+    partsModifyBtn.setOnAction(actionEvent -> {
+      Part selectedPart = partsTable.getSelectionModel().getSelectedItem();
+      if (selectedPart == null) {
+        // set alert type
+        a.setAlertType(Alert.AlertType.ERROR);
+        a.setTitle("Error");
+        a.setContentText("You must select a part to modify");
+        // show the dialog
+        a.show();
+      } else {
+        showPartsForm(selectedPart.getId());
+      }
+    });
 
     Button partsDeleteBtn = new Button();
     partsDeleteBtn.setText("Delete");
+    partsDeleteBtn.setOnAction(actionEvent -> {
+      Part selectedPart = partsTable.getSelectionModel().getSelectedItem();
+      if (selectedPart == null) {
+        // set alert type
+        a.setAlertType(Alert.AlertType.ERROR);
+        a.setTitle("Error");
+        a.setContentText("You must select a part to delete");
+        // show the dialog
+        a.show();
+      } else {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Dialog");
+        alert.setHeaderText("Delete a Part");
+        alert.setContentText("Are you sure you want to delete this part?");
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+          inventory.deletePart(selectedPart);
+        } else {
+          alert.close();
+        }
+      }
+    });
 
     HBox partsFooter = new HBox(defaultPadding, partsAddBtn, partsModifyBtn, partsDeleteBtn);
     partsFooter.setAlignment(Pos.BASELINE_RIGHT); // alignment
@@ -213,14 +254,6 @@ public class PartsTable {
         try {
           // process the form here
           // make sure it is valid
-          ObservableList<Part> allParts = inventory.getAllParts();
-          int newPartId = 0;
-          for(Part myPart : allParts) {
-            if(newPartId <= myPart.getId()) {
-              newPartId = myPart.getId() + 1;
-            }
-          }
-
           boolean partSourceValid = inHouseRb.isSelected() || outsourcedRb.isSelected();
           String partName = partNameTf.getText();
           boolean partNameValid = partName.length() > 0;
@@ -241,6 +274,7 @@ public class PartsTable {
             ||
             (outsourcedRb.isSelected() && partCompanyName!= null && partCompanyName.length() > 0);
 
+
           if (
             partSourceValid
               && partNameValid
@@ -248,23 +282,49 @@ public class PartsTable {
               && partCostValid
               && partMinMaxValid
               && partMachineOrCompanyNameValid) {
+
+            int newPartId = partId != null ? partId : getNewPartId();
+            Part newPart;
             if (outsourcedRb.isSelected()) {
-              Outsourced newPart = new Outsourced(newPartId, partName, partCost, partInventory, partMax, partMin, partCompanyName);
-              inventory.addPart(newPart);
+              newPart = new Outsourced(newPartId, partName, partCost, partInventory, partMin, partMax, partCompanyName);
             } else {
-              InHouse newPart = new InHouse(newPartId, partName, partCost, partInventory, partMax, partMin, partMachineId);
+              newPart = new InHouse(newPartId, partName, partCost, partInventory, partMin, partMax, partMachineId);
+            }
+
+            if (isEditing) {
+              int editingPartIndex = 0;
+              int countingPartIndex = 0;
+              ObservableList<Part> allParts = inventory.getAllParts();
+              for(Part myPart : allParts) {
+                if(partId == myPart.getId()) {
+                  editingPartIndex = countingPartIndex;
+                  break;
+                }
+                countingPartIndex++;
+              }
+              inventory.updatePart(editingPartIndex, newPart);
+            } else {
               inventory.addPart(newPart);
             }
+
             addPartDialog.close();
           } else {
-            System.out.println("Not Valid!");
+            // set alert type
+            a.setAlertType(Alert.AlertType.ERROR);
+            a.setTitle("Error");
+            a.setContentText("Invalid Part. Please fix the form and try again.");
+            // show the dialog
+            a.show();
             // TODO: handle this
             event.consume();
           }
         } catch (Exception e) {
-          // do something here
-          System.out.println(e.toString());
-          // TODO: handle this
+          // set alert type
+          a.setAlertType(Alert.AlertType.ERROR);
+          a.setTitle("Error");
+          a.setContentText(e.toString());
+          // show the dialog
+          a.show();
           event.consume();
         }
       }
@@ -272,5 +332,16 @@ public class PartsTable {
     addPartDialog.showAndWait();
     addPartDialog.close();
     addPartDialog.hide();
+  }
+
+  private int getNewPartId() {
+    int partId = 0;
+    ObservableList<Part> allParts = inventory.getAllParts();
+    for(Part myPart : allParts) {
+      if(partId <= myPart.getId()) {
+        partId = myPart.getId() + 1;
+      }
+    }
+    return partId;
   }
 }
