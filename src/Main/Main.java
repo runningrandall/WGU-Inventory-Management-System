@@ -4,8 +4,6 @@ import Elements.PartsTable;
 import Elements.ProductsTable;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -15,18 +13,29 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 
+/**
+ * Main class to drive application
+ * this class sets up the basic UI element display
+ * @author Randall Adams
+ * @version 1.0.0
+ * @since 12/31/2020
+ */
 public class Main extends Application {
     private final Inventory inventory = new Inventory();
-    private final int defaultPadding = 10;
 
+    /**
+     * Start method
+     * @param primaryStage - the stage
+     */
     @Override
-    public void start(Stage primaryStage) throws Exception{
-
+    public void start(Stage primaryStage) {
+        int defaultPadding = 10;
         // setup the grid
         GridPane gridpane = new GridPane();
 
         // partsTable elements
         TableView<Part> partsTable = getPartsTable(); // the parts table itself
+        partsTable.setPlaceholder(new Label("No parts found."));
         PartsTable partsTableE = new PartsTable(inventory, partsTable); // get elements
         HBox partsHeader = partsTableE.getPartsHeader(); // get header
         HBox partsFooter = partsTableE.getPartsFooter();
@@ -36,8 +45,9 @@ public class Main extends Application {
         gridpane.add(partsFooter, 0, 2);
 
         // productsTable elements
-        ProductsTable productsTableE = new ProductsTable(); // get elements
         TableView<Product> productsTable = getProductsTable(); // get products table
+        ProductsTable productsTableE = new ProductsTable(); // get elements
+        productsTable.setPlaceholder(new Label("No products found."));
         HBox productsHeader = productsTableE.getProductsHeader(productsTable, inventory); // get header
         HBox productsFooter = productsTableE.getProductsFooter();
         // add to grid
@@ -48,16 +58,12 @@ public class Main extends Application {
         // exit button
         Button exitBtn = new Button();
         exitBtn.setText("Exit");
-        exitBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Platform.exit();
-                System.exit(0);
-            }
+        exitBtn.setOnAction(actionEvent ->  {
+            Platform.exit();
+            System.exit(0);
         });
-
         gridpane.add(exitBtn, 1, 3);
-        gridpane.setHalignment(exitBtn, HPos.RIGHT);
+        GridPane.setHalignment(exitBtn, HPos.RIGHT);
 
         // Set the gap sizes.
         gridpane.setVgap(10);
@@ -80,9 +86,10 @@ public class Main extends Application {
         loadDefaultParts();
 
         TableView<Part> partsTable = new TableView<>();
+
         //Creating columns
         TableColumn partIdCol = new TableColumn("Part ID");
-         partIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        partIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         TableColumn partNameCol = new TableColumn("Part Name");
         partNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn partStockCol = new TableColumn("Inventory Level");
@@ -102,7 +109,6 @@ public class Main extends Application {
      */
     private TableView<Product> getProductsTable() {
         loadDefaultProducts();
-
         TableView<Product> productsTable = new TableView<>();
         //Creating columns
         TableColumn productsIdCol = new TableColumn("Product ID");
@@ -120,10 +126,16 @@ public class Main extends Application {
         return productsTable;
     }
 
+    /**
+     * method to load some default products
+     * there are no requirements to persist this in a remote database or file
+     * but there should be
+     */
     private void loadDefaultProducts() {
         inventory.addProduct(new Product(1000, "Giant Bike", 299.99, 5, 1, 10));
         inventory.addProduct(new Product(1001, "Tricyle", 99.99, 3, 1, 5));
     }
+
     /**
      * method to load some default parts
      */

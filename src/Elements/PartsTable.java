@@ -11,22 +11,37 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-
 import java.util.Optional;
 
+/**
+ * PartsTable class implements the UI components and logic that
+ * allow parts to be added, modified, and deleted
+ * @author Randall Adams
+ * @version 1.0.0
+ * @since 12/31/2020
+ */
 public class PartsTable {
   private final Inventory inventory;
   private final TableView<Part> partsTable;
   private final int defaultPadding = 10;
   private final String costRegex = "^[0-9]+.[0-9]{2}$";
   // create a alert
-  private Alert a = new Alert(Alert.AlertType.NONE);
+  private final Alert a = new Alert(Alert.AlertType.NONE);
 
+  /**
+   * PartsTable constructor
+   * @param inventory - the current inventory from main
+   * @param partsTable - the partsTable from main
+   */
   public PartsTable(Inventory inventory, TableView<Part> partsTable) {
     this.inventory = inventory;
     this.partsTable = partsTable;
   }
 
+  /**
+   * Method to get the parts header for display in the main scene
+   * @return HBox
+   */
   public HBox getPartsHeader() {
     // setup the parts table
     Label partsTableLabel = new Label("Parts"); // label
@@ -52,24 +67,23 @@ public class PartsTable {
     return partsHeader;
   }
 
+  /**
+   * Method to return the parts footer for display in the main scene
+   * It also contains the buttons and button event listeners for
+   * adding/modifying/deleting parts
+   * @return HBox
+   */
   public HBox getPartsFooter() {
     Button partsAddBtn = new Button();
     partsAddBtn.setText("Add");
-    partsAddBtn.setOnAction(actionEvent -> {
-      showPartsForm(null);
-    });
+    partsAddBtn.setOnAction(actionEvent -> showPartsForm(null));
 
     Button partsModifyBtn = new Button();
     partsModifyBtn.setText("Modify");
     partsModifyBtn.setOnAction(actionEvent -> {
       Part selectedPart = partsTable.getSelectionModel().getSelectedItem();
       if (selectedPart == null) {
-        // set alert type
-        a.setAlertType(Alert.AlertType.ERROR);
-        a.setTitle("Error");
-        a.setContentText("You must select a part to modify");
-        // show the dialog
-        a.show();
+        showError("Please select a part to modify.");
       } else {
         showPartsForm(selectedPart.getId());
       }
@@ -80,19 +94,16 @@ public class PartsTable {
     partsDeleteBtn.setOnAction(actionEvent -> {
       Part selectedPart = partsTable.getSelectionModel().getSelectedItem();
       if (selectedPart == null) {
-        // set alert type
-        a.setAlertType(Alert.AlertType.ERROR);
-        a.setTitle("Error");
-        a.setContentText("You must select a part to delete");
-        // show the dialog
-        a.show();
+        showError("Please select a part to delete.");
       } else {
+        // must confirm the delete via confirmation alert
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation Dialog");
         alert.setHeaderText("Delete a Part");
         alert.setContentText("Are you sure you want to delete this part?");
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK){
+        // if the alert is confirmed then delete the part, otherwise close the alert
+        if (result.isPresent() && result.get() == ButtonType.OK){
           inventory.deletePart(selectedPart);
         } else {
           alert.close();
@@ -105,9 +116,17 @@ public class PartsTable {
     return partsFooter;
   }
 
+  /**
+   * method to show the parts form itself
+   * this form is used to add and modify parts
+   * @param partId - the part id we are editing (or null)
+   */
   private void showPartsForm(Integer partId) {
+    // determine if we are editing or adding a new part
     boolean isEditing = partId != null;
+    // if editing grab the part
     Part part = isEditing ? inventory.lookupPart(partId) : null;
+    // setup various form components
     String inHouseLabel = "In House";
     RadioButton inHouseRb = new RadioButton(inHouseLabel);
     String outsourcedLabel = "Outsourced";
@@ -121,24 +140,31 @@ public class PartsTable {
     TextField partMachineIdTf = new TextField();
     TextField partCompanyNameTf = new TextField();
 
+    // populate fields if we are editing
     if (isEditing) {
-      if (part instanceof InHouse) {
-        partMachineIdTf.setText(Integer.toString(((InHouse) part).getMachineId()));
-        inHouseRb.setSelected(true);
-      }
+      try {
+        // select the part type based on InHouse vs. Outsourced
+        if (part instanceof InHouse) {
+          partMachineIdTf.setText(Integer.toString(((InHouse) part).getMachineId()));
+          inHouseRb.setSelected(true);
+        } else if (part instanceof Outsourced) {
+          partCompanyNameTf.setText(((Outsourced) part).getCompanyName());
+          outsourcedRb.setSelected(true);
+        }
 
-      if (part instanceof Outsourced) {
-        partCompanyNameTf.setText(((Outsourced) part).getCompanyName());
-        outsourcedRb.setSelected(true);
+        // populate other fields
+        partIdTf.setText(Integer.toString(part.getId()));
+        partNameTf.setText(part.getName());
+        partInvTf.setText(Integer.toString(part.getStock()));
+        partCostTf.setText(Double.toString(part.getPrice()));
+        partMaxTf.setText(Integer.toString(part.getMax()));
+        partMinTf.setText(Integer.toString(part.getMin()));
+      } catch (Exception e) {
+        showError(e.getMessage());
       }
-      partIdTf.setText(Integer.toString(part.getId()));
-      partNameTf.setText(part.getName());
-      partInvTf.setText(Integer.toString(part.getStock()));
-      partCostTf.setText(Double.toString(part.getPrice()));
-      partMaxTf.setText(Integer.toString(part.getMax()));
-      partMinTf.setText(Integer.toString(part.getMin()));
     }
 
+    // setup the dialog
     Dialog<String> addPartDialog = new Dialog<>();
     addPartDialog.setTitle("Add Part");
     addPartDialog.setResizable(true);
@@ -149,11 +175,10 @@ public class PartsTable {
     inHouseRb.setToggleGroup(partSourceGroup);
     outsourcedRb.setToggleGroup(partSourceGroup);
 
-    // setup the form
     // part id
     partIdTf.setPromptText("Auto Gen - Disabled");
-    partIdTf.setDisable(true); // WHY SHOW IT?
-    Label partIdLabel = new Label("ID"); // label
+    partIdTf.setDisable(true); // WHY SHOW IT IF ALWAYS DISABLED?
+    Label partIdLabel = new Label("ID");
 
     // part name
     partNameTf.setPromptText("Part Name");
@@ -172,6 +197,7 @@ public class PartsTable {
     // part cost
     partCostTf.setPromptText("0.00");
     Label partCostLabel = new Label("Price/Cost"); // label
+    // force to be double entry only
     partCostTf.textProperty().addListener((observableValue, oldV, newV) -> {
       if (!newV.matches(costRegex)){
         partCostTf.setText(newV.replaceAll("[" + costRegex + "]", ""));
@@ -181,6 +207,7 @@ public class PartsTable {
     // part max
     partMaxTf.setPromptText("20");
     Label partMaxLabel = new Label("Max"); // label
+    // numbers only
     partMaxTf.textProperty().addListener((observableValue, oldV, newV) -> {
       if (!newV.matches("\\d*")) {
         partMaxTf.setText(newV.replaceAll("[^\\d]", ""));
@@ -189,7 +216,8 @@ public class PartsTable {
 
     // part min
     partMinTf.setPromptText("1");
-    Label partMinLabel = new Label("Min"); // label
+    Label partMinLabel = new Label("Min");
+    // numbers only
     partMinTf.textProperty().addListener((observableValue, oldV, newV) -> {
       if (!newV.matches("\\d*")) {
         partMinTf.setText(newV.replaceAll("[^\\d]", ""));
@@ -199,8 +227,10 @@ public class PartsTable {
     // part machine id
     partMachineIdTf.visibleProperty().bind(inHouseRb.selectedProperty());
     partMachineIdTf.setPromptText("0000");
-    Label partMachineIdLabel = new Label("Machine ID"); // label
+    Label partMachineIdLabel = new Label("Machine ID");
+    // only show when the part is "InHouse"
     partMachineIdLabel.visibleProperty().bind(inHouseRb.selectedProperty());
+    // numbers only
     partMachineIdTf.textProperty().addListener((observableValue, oldV, newV) -> {
       if (!newV.matches("\\d*")) {
         partMachineIdTf.setText(newV.replaceAll("[^\\d]", ""));
@@ -210,7 +240,8 @@ public class PartsTable {
     // part company name
     partCompanyNameTf.visibleProperty().bind(outsourcedRb.selectedProperty());
     partCompanyNameTf.setPromptText("Company");
-    Label partCompanyNameLabel = new Label("Company Name"); // label
+    Label partCompanyNameLabel = new Label("Company Name");
+    // only show when the part is "Outsourced"
     partCompanyNameLabel.visibleProperty().bind(outsourcedRb.selectedProperty());
 
 
@@ -220,6 +251,10 @@ public class PartsTable {
     ColumnConstraints constraints = new ColumnConstraints();
     constraints.setHgrow(Priority.ALWAYS);
     gridpane.getColumnConstraints().addAll(new ColumnConstraints(), constraints);
+    gridpane.setVgap(10);
+    gridpane.setHgap(10);
+    gridpane.setPadding(new Insets(defaultPadding * 3));
+    // would be nice to have a map and loop through these instead of many lines of assignments
     gridpane.add(partTypeLabel, 0, 0);
     gridpane.add(inHouseRb, 1, 0);
     gridpane.add(outsourcedRb, 1, 1);
@@ -239,21 +274,19 @@ public class PartsTable {
     gridpane.add(partMachineIdTf, 1, 7);
     gridpane.add(partCompanyNameLabel, 0, 7);
     gridpane.add(partCompanyNameTf, 1, 7);
-    gridpane.setVgap(10);
-    gridpane.setHgap(10);
-    gridpane.setPadding(new Insets(defaultPadding * 3));
+
     // set content
     addPartDialog.getDialogPane().setContent(gridpane);
     // add dialog buttons
     addPartDialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
     // tap into event listener
     final Button saveButton = (Button) addPartDialog.getDialogPane().lookupButton(ButtonType.OK);
+    // when saving we process the form
     saveButton.addEventFilter(
       ActionEvent.ACTION,
       event -> {
         try {
-          // process the form here
-          // make sure it is valid
+          // setup validations with series of booleans and values
           boolean partSourceValid = inHouseRb.isSelected() || outsourcedRb.isSelected();
           String partName = partNameTf.getText();
           boolean partNameValid = partName.length() > 0;
@@ -274,7 +307,9 @@ public class PartsTable {
             ||
             (outsourcedRb.isSelected() && partCompanyName!= null && partCompanyName.length() > 0);
 
-
+          // all of the following must be met to save
+          // if any of these are not met we don't tell the user
+          // specifically what's wrong...would be nice to do that
           if (
             partSourceValid
               && partNameValid
@@ -285,46 +320,29 @@ public class PartsTable {
 
             int newPartId = partId != null ? partId : getNewPartId();
             Part newPart;
+            // various types based on outsourced vs InHouse
             if (outsourcedRb.isSelected()) {
               newPart = new Outsourced(newPartId, partName, partCost, partInventory, partMin, partMax, partCompanyName);
-            } else {
+            } else if (inHouseRb.isSelected()) {
               newPart = new InHouse(newPartId, partName, partCost, partInventory, partMin, partMax, partMachineId);
+            } else {
+              newPart = new Part(newPartId, partName, partCost, partInventory, partMin, partMax);
             }
 
             if (isEditing) {
-              int editingPartIndex = 0;
-              int countingPartIndex = 0;
-              ObservableList<Part> allParts = inventory.getAllParts();
-              for(Part myPart : allParts) {
-                if(partId == myPart.getId()) {
-                  editingPartIndex = countingPartIndex;
-                  break;
-                }
-                countingPartIndex++;
-              }
-              inventory.updatePart(editingPartIndex, newPart);
+              inventory.updatePart(getPartIndexFromPartId(partId), newPart);
             } else {
               inventory.addPart(newPart);
             }
-
             addPartDialog.close();
           } else {
-            // set alert type
-            a.setAlertType(Alert.AlertType.ERROR);
-            a.setTitle("Error");
-            a.setContentText("Invalid Part. Please fix the form and try again.");
-            // show the dialog
-            a.show();
-            // TODO: handle this
+            showError("Invalid Part. Please fix the form and try again.");
+            // prevent dialog from closing
             event.consume();
           }
         } catch (Exception e) {
-          // set alert type
-          a.setAlertType(Alert.AlertType.ERROR);
-          a.setTitle("Error");
-          a.setContentText(e.toString());
-          // show the dialog
-          a.show();
+          showError(e.getMessage());
+          // prevent dialog from closing
           event.consume();
         }
       }
@@ -334,6 +352,10 @@ public class PartsTable {
     addPartDialog.hide();
   }
 
+  /**
+   * method to get the newest part id
+   * @return partId
+   */
   private int getNewPartId() {
     int partId = 0;
     ObservableList<Part> allParts = inventory.getAllParts();
@@ -343,5 +365,41 @@ public class PartsTable {
       }
     }
     return partId;
+  }
+
+  /**
+   * Method to show an alert error
+   * Used when there is an error, validation is missing, etc.
+   * @param message - the string message to be displayed in the error
+   */
+  private void showError(String message) {
+    // set alert type
+    a.setAlertType(Alert.AlertType.ERROR);
+    a.setTitle("Error");
+    a.setContentText(message);
+    // show the dialog
+    a.show();
+  }
+
+  /**
+   * method to get the next part id
+   * it might be better for this method to be in the Inventory class
+   * but the UML diagram said not to
+   * @param partId - the part id we are looking for
+   * @return partIndex
+   */
+  private int getPartIndexFromPartId(int partId) {
+    int editingPartIndex = 0;
+    int countingPartIndex = 0;
+    ObservableList<Part> allParts = inventory.getAllParts();
+    for(Part myPart : allParts) {
+      // I'm worried about null pointers. It is wrapped in a try so I think we're ok
+      if(partId == myPart.getId()) {
+        editingPartIndex = countingPartIndex;
+        break;
+      }
+      countingPartIndex++;
+    }
+    return editingPartIndex;
   }
 }
